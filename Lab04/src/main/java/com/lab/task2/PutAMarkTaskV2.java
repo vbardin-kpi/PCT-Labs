@@ -34,13 +34,13 @@ public class PutAMarkTaskV2 extends RecursiveTask {
                         context.teacher(),
                         context.mark());
 
-                System.out.println(currentThread().getName() + " //" +
-                        " Week: " + context.week() +
-                        " Teacher " + context.teacher().name() +
-                        " with role " + context.teacher().teacherType() +
-                        " put " + context.mark() +
-                        " to student " + context.studentName() +
-                        " for " + context.subject());
+                // System.out.println(currentThread().getName() + " //" +
+                //         " Week: " + context.week() +
+                //         " Teacher " + context.teacher().name() +
+                //         " with role " + context.teacher().teacherType() +
+                //         " put " + context.mark() +
+                //         " to student " + context.studentName() +
+                //         " for " + context.subject());
             }
         }
 

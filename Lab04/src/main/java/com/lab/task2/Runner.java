@@ -1,9 +1,9 @@
 package com.lab.task2;
 
-import java.io.Console;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +33,12 @@ public class Runner {
     }
 
     public void run() {
+        runForkJoin();
+        runBasicThreads();
+    }
+
+    private void runForkJoin() {
+        var currTime = System.currentTimeMillis();
         int weeks = 18;
 
         var fjPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
@@ -58,6 +64,44 @@ public class Runner {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        long currTimeForkJoin = System.currentTimeMillis() - currTime;
+
+        System.out.printf("Execution time (ForkJoin): %d ms\n", currTimeForkJoin);
+    }
+
+    private void runBasicThreads() {
+        var currTime = System.currentTimeMillis();
+        int weeks = 18;
+
+        try {
+            for (int i = 0; i < weeks; i++) {
+                try (var threadPool = Executors.newCachedThreadPool()) {
+                    int weekNumber = i + 1;
+                    var contexts = studentNames
+                            .stream().map(studentName -> new PutAMarkTask(new PutAMarkContext(
+                                    journal,
+                                    getTeacher(teachers),
+                                    studentName,
+                                    getSubject(subjects),
+                                    ThreadLocalRandom.current().nextFloat(0, 101f),
+                                    weekNumber)))
+                            .toList();
+
+                    contexts.forEach(threadPool::submit);
+
+                    threadPool.shutdown();
+                    threadPool.awaitTermination(30L, TimeUnit.SECONDS);
+                }
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        long currTimeForkJoin = System.currentTimeMillis() - currTime;
+
+        System.out.printf("Execution time (Base thread pool): %d ms\n", currTimeForkJoin);
     }
 
     private String getSubject(String[] items) {

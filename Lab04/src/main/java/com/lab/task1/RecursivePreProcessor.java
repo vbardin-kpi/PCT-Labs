@@ -6,7 +6,7 @@ import java.util.concurrent.RecursiveTask;
 public class RecursivePreProcessor extends RecursiveTask {
     private final List<String> words;
     private final Map<String, Integer> wordsStat;
-    private static final int THRESHOLD = 2000;
+    private static final int THRESHOLD = 200000;
 
     public RecursivePreProcessor(List<String> words, Map<String, Integer> wordsStat) {
         this.words = words;

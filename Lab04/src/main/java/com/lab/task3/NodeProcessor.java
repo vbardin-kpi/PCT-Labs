@@ -41,7 +41,7 @@ public class NodeProcessor {
         wordsDescriptors.values().stream()
                 .sorted(Comparator.comparing(d -> d.files().size()))
                 .forEach(x -> {
-                    if (x.files().size() > 1) {
+                    if (x.files().size() > 2) {
                         System.out.println(x.word() + ": " + String.join(", ", x.files()));
                     }
                 });

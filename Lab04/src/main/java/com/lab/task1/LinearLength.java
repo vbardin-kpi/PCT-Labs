@@ -6,14 +6,15 @@ import java.util.List;
 public class LinearLength extends WordsCounter {
     @Override
     public Result process(List<String> words) {
-        HashMap<String, Integer> wordCounts = new HashMap<>();
+        HashMap<String, Integer> wordsStat = new HashMap<>();
 
         for (String word : words) {
-            wordCounts.putIfAbsent(word, word.length());
+            wordsStat.putIfAbsent(word, word.length());
         }
 
-        double averageLength = getAverageLength(wordCounts);
-
-        return new Result(averageLength);
+        return new Result(
+                getAverageLength(wordsStat),
+                getVariance(wordsStat),
+                getUniqueWords(wordsStat));
     }
 }

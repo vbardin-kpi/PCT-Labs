@@ -2,7 +2,7 @@ package com.lab;
 
 public class Main {
     public static void main(String[] args) {
-        final var runningProfile = RunningProfile.TASK_1;
+        final var runningProfile = RunningProfile.TASK_4;
 
         switch (runningProfile) {
             case TASK_1 -> new com.lab.task1.Runner().run();

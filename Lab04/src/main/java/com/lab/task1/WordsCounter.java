@@ -10,4 +10,14 @@ public abstract class WordsCounter {
         var wordsTotalLengths = wordCounts.values().stream().mapToDouble(wordLength -> wordLength).sum();
         return wordsTotalLengths / (long) wordCounts.values().size();
     }
+
+    protected double getVariance(Map<String, Integer> wordCounts) {
+        return (wordCounts.values().stream().mapToDouble(i -> Math.pow(i, 2)).sum()
+                / wordCounts.size()) - Math.pow(wordCounts.values().stream().mapToDouble(i -> i).sum()
+                        / wordCounts.size(), 2);
+    }
+
+    protected int getUniqueWords(Map<String, Integer> wordCounts) {
+        return wordCounts.size();
+    }
 }
