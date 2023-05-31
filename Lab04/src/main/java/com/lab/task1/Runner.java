@@ -16,7 +16,9 @@ public class Runner {
 
         System.out.printf("Execution time (ForkJoin): %d ms\n", currTimeForkJoin);
 
-        System.out.printf("Average length: %f\n", res.mean());
+        System.out.printf("Mean: %f\n", res.mean());
+        System.out.printf("Variance: %f\n", res.variance());
+        System.out.printf("Unique words: %d\n", res.uniqueWords());
         System.out.println();
 
         var linearCounter = new LinearLength();
@@ -24,7 +26,10 @@ public class Runner {
         var linearResult = linearCounter.process(words);
         var currTimeLinear = System.currentTimeMillis() - currTime;
 
+        System.out.printf("Mean: %f\n", linearResult.mean());
+        System.out.printf("Variance: %f\n", linearResult.variance());
+        System.out.printf("Unique words: %d\n", linearResult.uniqueWords());
+
         System.out.printf("Execution time (linear): %d ms\n", currTimeLinear);
-        System.out.printf("Average length: %f\n", linearResult.mean());
     }
 }

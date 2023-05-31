@@ -10,8 +10,9 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.isNull;
 
-public class NodeProcessor {
+public class  NodeProcessor {
     protected Map<String, WordDescriptor> wordsDescriptors;
+    protected DirectoryInfo lastAnalyzedDirectoryInfo;
 
     public NodeProcessor() {
         this.wordsDescriptors = Collections.synchronizedMap(new HashMap<>());
@@ -22,7 +23,7 @@ public class NodeProcessor {
 
         try (var pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors())) {
             if (file.isDirectory() && !isNull(file.listFiles())) {
-                pool.submit(new NodeExpanderTask(wordsDescriptors, file)).join();
+                lastAnalyzedDirectoryInfo = pool.submit(new NodeExpanderTask(wordsDescriptors, file)).join();
             } else {
                 System.out.println("Given path isn't a directory");
                 throw new RuntimeException();
@@ -41,7 +42,7 @@ public class NodeProcessor {
         wordsDescriptors.values().stream()
                 .sorted(Comparator.comparing(d -> d.files().size()))
                 .forEach(x -> {
-                    if (x.files().size() > 2) {
+                    if (x.files().size() >= lastAnalyzedDirectoryInfo.files()) {
                         System.out.println(x.word() + ": " + String.join(", ", x.files()));
                     }
                 });

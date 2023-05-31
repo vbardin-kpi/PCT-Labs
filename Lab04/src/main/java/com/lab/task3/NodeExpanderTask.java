@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 
-public class NodeExpanderTask extends RecursiveTask {
+public class NodeExpanderTask extends RecursiveTask<DirectoryInfo> {
     private final Map<String, WordDescriptor> wordsDescriptors;
     private final File file;
 
@@ -23,7 +23,7 @@ public class NodeExpanderTask extends RecursiveTask {
     }
 
     @Override
-    protected Object compute() {
+    protected DirectoryInfo compute() {
         if (file.isDirectory() && !isNull(file.listFiles())) {
             var tasks = new ArrayList<NodeExpanderTask>();
 
@@ -33,7 +33,11 @@ public class NodeExpanderTask extends RecursiveTask {
             }
 
             tasks.forEach(ForkJoinTask::fork);
-            tasks.forEach(ForkJoinTask::join);
+            var filesInSubDirs = tasks.stream()
+                    .map(ForkJoinTask::join)
+                    .mapToInt(DirectoryInfo::files).sum();
+
+            return new DirectoryInfo(filesInSubDirs);
         } else {
             var words = getWordsFromFile(file);
             words.forEach(w -> {
@@ -46,9 +50,9 @@ public class NodeExpanderTask extends RecursiveTask {
                 }
                 descriptor.files().add(file.getName());
             });
-        }
 
-        return new Object();
+            return new DirectoryInfo(1);
+        }
     }
 
     private static Set<String> getWordsFromFile(File file) {
