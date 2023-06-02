@@ -21,8 +21,7 @@ public abstract class MultiplierBase {
         return new MpjState(mpi_size, remainder, chunkSize);
     }
 
-    protected abstract void masterThreadLogic();
-    protected abstract void slaveThreadLogic();
+    abstract void multiply();
 
     protected void fillResultMatrix(int[][] responseChunk, int[][] chunk1, int[][] matrix2) {
         for (var i = 0; i < chunk1.length; i++) {
@@ -32,5 +31,9 @@ public abstract class MultiplierBase {
                 }
             }
         }
+    }
+
+    public TaskConfig getTaskConfig() {
+        return taskConfig;
     }
 }

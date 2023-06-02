@@ -4,7 +4,6 @@ import mpi.MPI;
 import mpi.Request;
 
 public class MultiplyNonBlocking extends MultiplierBase {
-    private static final int size = 100;
     private static final int m1Tag = 20;
     private static final int m2Tag = 22;
     private static final int responseTag = 24;
@@ -12,14 +11,15 @@ public class MultiplyNonBlocking extends MultiplierBase {
 
     private int nodeId = 0;
 
-    private final int[][] matrix1 = generator.generate(size, size, 5);
-    private final int[][] matrix2 = generator.generate(size, size, 5);
+    private final int[][] matrix1 = generator.generate(getTaskConfig().matrixWidth(), getTaskConfig().matrixWidth(), 5);
+    private final int[][] matrix2 = generator.generate(getTaskConfig().matrixWidth(), getTaskConfig().matrixWidth(), 5);
 
     public MultiplyNonBlocking(String[] args, TaskConfig taskConfig) {
         super(args, taskConfig);
     }
 
-    public void multiplyNonBlocking() {
+    @Override
+    public void multiply() {
         nodeId = MPI.COMM_WORLD.Rank();
         var isMaster = nodeId == state.nodesNumber() - 1;
 
@@ -31,7 +31,6 @@ public class MultiplyNonBlocking extends MultiplierBase {
         MPI.Finalize();
     }
 
-    @Override
     protected void masterThreadLogic() {
         var startTime = System.currentTimeMillis();
         Request[] results = new Request[state.nodesNumber() - 1];
@@ -50,17 +49,15 @@ public class MultiplyNonBlocking extends MultiplierBase {
             MPI.COMM_WORLD.Isend(flatM2, 0, flatM2.length, MPI.INT, i, m2Tag);
 
             results[i] = MPI.COMM_WORLD.Irecv(flatResult,
-                    startIndex * size,
-                    size * (endIndex - startIndex),
+                    startIndex * getTaskConfig().matrixWidth(),
+                    getTaskConfig().matrixWidth() * (endIndex - startIndex),
                     MPI.INT, i, responseTag);
         }
         Request.Waitall(results);
         var time = System.currentTimeMillis() - startTime;
-        MatrixHelpers.print(MatrixHelpers.reshapeMatrix(flatResult, matrix2[0].length));
-        System.out.println("Duration - " + time);
+        System.out.println(this.getClass().getSimpleName() + " // Duration - " + time);
     }
 
-    @Override
     protected void slaveThreadLogic() {
         var rowNum = (nodeId == state.nodesNumber() - 2) ? state.chunkSize() + state.reminder() : state.chunkSize();
         var responseChunk = new int[rowNum][matrix1.length];

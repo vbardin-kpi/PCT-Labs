@@ -7,7 +7,6 @@ public class MultiplyBlocking extends MultiplierBase {
     static int m2Tag = 22;
     static int responseTag = 24;
     static MatrixGenerator generator = new MatrixGenerator();
-    static int size = 4;
 
     int nodeId;
 
@@ -16,11 +15,24 @@ public class MultiplyBlocking extends MultiplierBase {
     }
 
     @Override
+    public void multiply() {
+        nodeId = MPI.COMM_WORLD.Rank();
+
+        var isMaster = nodeId == 0;
+        if (isMaster) {
+            masterThreadLogic();
+        } else {
+            slaveThreadLogic();
+        }
+
+        MPI.Finalize();
+    }
+
     protected void masterThreadLogic() {
         long startTime = System.currentTimeMillis();
 
-        var matrix1 = generator.generate(size, size, 5);
-        var matrix2 = generator.generate(size, size, 5);
+        var matrix1 = generator.generate(getTaskConfig().matrixWidth(), getTaskConfig().matrixWidth(), 5);
+        var matrix2 = generator.generate(getTaskConfig().matrixWidth(), getTaskConfig().matrixWidth(), 5);
         var result = new int[matrix1.length][matrix2[0].length];
 
         for (var i = 1; i < state.nodesNumber(); i++) {
@@ -50,39 +62,25 @@ public class MultiplyBlocking extends MultiplierBase {
             }
         }
         var time = System.currentTimeMillis() - startTime;
-        MatrixHelpers.print(result);
-        System.out.println("Duration - " + time);
+
+        System.out.println(this.getClass().getSimpleName() + " // Duration - " + time);
     }
 
-    @Override
     protected void slaveThreadLogic() {
         var rowNum = (nodeId == state.nodesNumber() - 1) ? state.chunkSize() + state.reminder() : state.chunkSize();
-        var responseChunk = new int[rowNum][size];
+        var responseChunk = new int[rowNum][getTaskConfig().matrixWidth()];
 
-        var flatChunk1 = new int[rowNum * size];
+        var flatChunk1 = new int[rowNum * getTaskConfig().matrixWidth()];
         MPI.COMM_WORLD.Recv(flatChunk1, 0, flatChunk1.length, MPI.INT, 0, m1Tag);
-        var chunk1 = MatrixHelpers.reshapeMatrix(flatChunk1, size);
+        var chunk1 = MatrixHelpers.reshapeMatrix(flatChunk1, getTaskConfig().matrixWidth());
 
-        var flatChunk2 = new int[size * size];
+        var flatChunk2 = new int[getTaskConfig().matrixWidth() * getTaskConfig().matrixWidth()];
         MPI.COMM_WORLD.Recv(flatChunk2, 0, flatChunk2.length, MPI.INT, 0, m2Tag);
-        var matrix2 = MatrixHelpers.reshapeMatrix(flatChunk2, size);
+        var matrix2 = MatrixHelpers.reshapeMatrix(flatChunk2, getTaskConfig().matrixWidth());
 
-        MultiplyNonBlocking.fillResultMatrix(responseChunk, chunk1, matrix2);
+        fillResultMatrix(responseChunk, chunk1, matrix2);
 
         var flatResp = MatrixHelpers.flattenMatrix(responseChunk);
         MPI.COMM_WORLD.Send(flatResp, 0, flatResp.length, MPI.INT, 0, responseTag);
-    }
-
-    public void multiplyBlocking() {
-        nodeId = MPI.COMM_WORLD.Rank();
-
-        var isMaster = nodeId == 0;
-        if (isMaster) {
-            masterThreadLogic();
-        } else {
-            slaveThreadLogic();
-        }
-
-        MPI.Finalize();
     }
 }
