@@ -5,7 +5,7 @@ import java.util.concurrent.*;
 
 public class Main {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        int numSimulations = 4;
+        int numSimulations = 2;
         double totalClientsServed = 0;
         double totalClientsRejected = 0;
         double totalAverageQueueLength = 0;
@@ -67,7 +67,7 @@ public class Main {
     private static SimulationProcessorConfiguration getConfig() {
         final int numChannels = 5;
         final int queueSize = 5;
-        final long serviceTime = 100;
+        final long serviceTime = 500;
         final int numClients = 100;
         final long clientArrivalInterval = 80;
 

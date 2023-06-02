@@ -61,7 +61,7 @@ public class SimulationProcessor implements Callable<SimulationResult> {
             });
         }
 
-        channelThreadPool.execute(new Printer(modelId, clientQueue.size(), clientsServed, clientsRejected, clientsLatch));
+        channelThreadPool.execute(new Printer(modelId, clientQueue, clientsServed, clientsRejected, clientsLatch));
 
         ScheduledExecutorService clientsExecutor = Executors.newScheduledThreadPool(1);
         for (int clientNumber = 1; clientNumber <= configuration.clientsAmount(); clientNumber++) {
